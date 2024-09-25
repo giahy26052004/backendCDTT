@@ -96,12 +96,7 @@ app.get("/", (req, res) => {
 //-------------------------------------------
 // Upload image
 app.use("/images", express.static(path.join(__dirname, "upload/images"))); // Sửa: Sử dụng path.join và __dirname
-app.post("/upload", upload.single("product"), (req, res) => {
-  res.json({
-    success: 1,
-    image_url: `https://backendcdtt.onrender.com/images/${req.file.filename}`,
-  });
-});
+
 // addProduct
 app.post("/addProduct", addProduct);
 ///removeProduct
