@@ -13,6 +13,7 @@ import {
   popularinwomen,
   newCollection,
   getCartbyId,
+  searchProducts,
 } from "./controllers/productController.js"; // Sửa: dùng import
 import "dotenv/config"; // Đảm bảo nạp biến môi trường
 import { addUser, loginUser } from "./controllers/UserController.js";
@@ -23,6 +24,10 @@ import {
 } from "./controllers/cartController.js";
 import { fetchUserToken } from "./midleware/fetchUserToken.js";
 import { checkout, getOrderData } from "./controllers/orderController.js";
+import cloudinary from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+const cloudinaryConfig = cloudinary.v2;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,24 +46,47 @@ mongoose
   .then(() => console.log("Connected with MongoDB"))
   .catch((err) => console.error("Error connect with MongoDB:", err));
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, "./upload/images"), // Sửa: Sử dụng path.join và __dirname
-  filename: (req, file, cb) => {
-    return cb(
-      null,
-      `${Date.now()}-${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`
-    );
+// Configure Cloudinary
+cloudinaryConfig.config({
+  cloud_name: "difmknbax",
+  api_key: "245937446394184",
+  api_secret: "3z6PuFI5lPLKmAYUPdgIRlDiKEI",
+});
+
+cloudinaryConfig.api.ping((error, result) => {
+  if (error) {
+    console.error("Cloudinary connection error:", error);
+  } else {
+    console.log("Connected to Cloudinary:", result);
+  }
+});
+
+// Create Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinaryConfig,
+  params: {
+    folder: "uploads/images",
+    format: async (req, file) => {
+      return await path.extname(file.originalname).substring(1);
+    },
+    public_id: (req, file) => {
+      return `${Date.now()}-${file.fieldname}`;
+    },
   },
 });
 
 const upload = multer({ storage: storage });
 
-// Tạo thư mục nếu nó không tồn tại
-const uploadDir = path.join(__dirname, "./upload/images"); // Sửa: Sử dụng path.join và __dirname
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
+// Routes
+app.post("/upload", upload.single("product"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: 0, message: "No file uploaded." });
+  }
+  res.json({
+    success: 1,
+    image_url: req.file.path,
+  });
+});
 // Routes /index
 app.get("/", (req, res) => {
   res.send("HelloExpress!");
@@ -84,6 +112,9 @@ app.get("/allproducts", getAllProduct);
 app.get("/newcollections", newCollection);
 //WOMEN SECTION
 app.get("/popularinwomen", popularinwomen);
+//SEARCH
+// Search products
+app.get("/search", searchProducts);
 
 //-------------------------------------------
 //USER ROUTES
