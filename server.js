@@ -14,6 +14,7 @@ import {
   newCollection,
   getCartbyId,
   searchProducts,
+  editProduct,
 } from "./controllers/productController.js"; // Sửa: dùng import
 import "dotenv/config"; // Đảm bảo nạp biến môi trường
 import { addUser, loginUser } from "./controllers/UserController.js";
@@ -126,6 +127,8 @@ app.get("/getcart", fetchUserToken, getCartData);
 //ORDER ROUTES
 app.get("/orders", getOrderData);
 app.post("/checkout", fetchUserToken, checkout);
+// EDIT PRODUCT ROUTE
+app.put("/editproduct", fetchUserToken, editProduct);
 
 // Start server
 app.listen(PORT, () => {

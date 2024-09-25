@@ -75,10 +75,32 @@ const searchProducts = async (req, res) => {
     res.status(500).json({ message: "Error searching products", error });
   }
 };
+// EDIT PRODUCT
+const editProduct = async (req, res) => {
+  const { id, name, new_price, old_price, category, image } = req.body;
+
+  try {
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id: id },
+      { name, new_price, old_price, category, image },
+      { new: true } // Return the updated document
+    );
+    console.log(updatedProduct);
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   popularinwomen,
   addProduct,
   searchProducts,
+  editProduct,
   removeProduct,
   getAllProduct,
   newCollection,
